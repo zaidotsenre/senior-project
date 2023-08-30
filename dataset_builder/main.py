@@ -1,40 +1,83 @@
+# A python script to assist in the creation of training and testing datasets
+# for our custom AWS Rekognition Model
+#
+
+# Written by: Ernesto Diaz
+# Senior Project in IT @ University of South Florida
+# Group 12
+# Fall 2023
+
+# input:
+#   a text file with a list of gym equipment names
+#   the maximum number of images to be downloaded per equipment
+#   the directory where the dataset will be stored
+#   the minimum confidence level for human detection
+
+# output:
+#   an organized collection of images (no persons))
+
 from bing_image_downloader import downloader
-import cv2
 import os
-
-human_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fullbody.xml')
-
-
-def detect_people(img_path):
-    image = cv2.imread(img_path)
-    hog = cv2.HOGDescriptor()
-    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-
-    # detect humans in input image
-    (humans, _) = hog.detectMultiScale(image, winStride=(10, 10),
-                                       padding=(32, 32), scale=1.1)
-
-    # getting no. of human detected
-    print('Human Detected : ', len(humans))
-    print(humans)
-    if len(humans) > 0:
-        return True
-    else:
-        return False
+import boto3
 
 
-def get_img_paths(directory):
-    return [path for path in os.listdir(directory) if path.endswith(".jpg") or path.endswith(".png")]
+def get_image_from_file(filename):
+    with open(filename, 'rb') as img_file:
+        return img_file.read()
 
 
-for path in get_img_paths("dataset/back extension"):
-    if detect_people("dataset/back extension/" + path):
-        os.remove("dataset/back extension/" + path)
-        print("Removed dataset/back extension/" + path)
+def remove_invalid_format(directory):
+    for file in os.listdir(directory):
+        if file.endswith(".jpg") or file.endswith(".png"):
+            continue
+        else:
+            os.remove(directory + "/" + file)
 
 
-# queries = {"leg press", "back extension"}
-# for query in queries:
-#    downloader.download(query, limit=100, output_dir='dataset',
-#                        adult_filter_off=True, force_replace=False, timeout=60)
+def remove_with_people(directory, min_confidence = 50):
 
+    rekognition = boto3.client("rekognition")
+
+    print('\n\n')
+    print(f"Removing images with humans from {directory}...")
+    for image in os.listdir(directory):
+        print('\n\n')
+        print(f'Checking {image}...')
+        image = f'{directory}{image}'
+        bytes = get_image_from_file(image)
+        response = rekognition.detect_labels(Image={'Bytes': bytes}, MinConfidence=min_confidence,
+                                             Settings={"GeneralLabels": {"LabelInclusionFilters": ["Person"]}})
+        for label in response["Labels"]:
+            if label["Name"] == "Person":
+                os.remove(image)
+                print(f"Removed {image}.")
+
+
+if __name__ == "__main__":
+
+    directory = "dataset"
+
+    # define list of equipment names
+    names = {"seated leg press", "chest fly machine"}
+
+    # download images
+    for name in names:
+        downloader.download(name, limit=20, output_dir=directory,
+                            adult_filter_off=True, force_replace=False, timeout=1)
+
+    # delete images that are not .jpg or .png
+    for name in names:
+        remove_invalid_format(f'{directory}/{name}/')
+
+    # detect and delete images that contain humans
+    for name in names:
+        remove_with_people(f'{directory}/{name}/')
+
+    # rename remaining images
+    for name in names:
+        num = 0
+        for image in os.listdir(f'{directory}/{name}/'):
+            image = f'{directory}/{name}/{image}'
+            ext = image[image.find('.'):]
+            os.rename(image, f'{directory}/{name}/{name.replace(" ","_")}_{num}{ext}')
+            num += 1
