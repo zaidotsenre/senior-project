@@ -10,8 +10,6 @@
 # input:
 #   a text file with a list of gym equipment names
 #   the maximum number of images to be downloaded per equipment
-#   the directory where the dataset will be stored
-#   the minimum confidence level for human detection
 
 # output:
 #   an organized collection of images (no persons))
@@ -34,8 +32,7 @@ def remove_invalid_format(directory):
             os.remove(directory + "/" + file)
 
 
-def remove_with_people(directory, min_confidence = 50):
-
+def remove_with_people(directory, min_confidence=50):
     rekognition = boto3.client("rekognition")
 
     print('\n\n')
@@ -57,27 +54,41 @@ if __name__ == "__main__":
 
     directory = "dataset"
 
-    # define list of equipment names
-    names = {"seated leg press", "chest fly machine"}
+    # get user input
+    equipment_names_path = input("Enter path to equipment list:")
+    num_images = int(input("Number of images to download (per equipment):"))
+
+    equipment_names = {}
+    with open(equipment_names_path, "r") as file:
+        equipment_names = file.readlines()
 
     # download images
-    for name in names:
-        downloader.download(name, limit=20, output_dir=directory,
-                            adult_filter_off=True, force_replace=False, timeout=1)
+    for name in equipment_names:
+        try:
+            downloader.download(name, limit=num_images, output_dir=directory,
+                                adult_filter_off=True, force_replace=False, timeout=1)
+        except:
+            continue
 
     # delete images that are not .jpg or .png
-    for name in names:
+    print("\n\n")
+    print("Removing images that are not .jpg or .png format...")
+    for name in equipment_names:
         remove_invalid_format(f'{directory}/{name}/')
 
     # detect and delete images that contain humans
-    for name in names:
+    print("\n\n")
+    print("Removing images that contain people...")
+    for name in equipment_names:
         remove_with_people(f'{directory}/{name}/')
 
     # rename remaining images
-    for name in names:
+    print("\n\n")
+    print("Renaming images...")
+    for name in equipment_names:
         num = 0
         for image in os.listdir(f'{directory}/{name}/'):
             image = f'{directory}/{name}/{image}'
             ext = image[image.find('.'):]
-            os.rename(image, f'{directory}/{name}/{name.replace(" ","_")}_{num}{ext}')
+            os.rename(image, f'{directory}/{name}/{name.replace(" ", "_")}_{num}{ext}')
             num += 1
