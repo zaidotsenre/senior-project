@@ -52,6 +52,33 @@ def remove_with_people(directory, min_confidence=50):
                 print(f"Removed {image}.")
 
 
+def detect_humans(img):
+    hog = cv2.HOGDescriptor()
+    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+    if img.shape[1] < 400:
+        (height, width) = img.shape[:2]
+        ratio = width / float(width)
+        img = cv2.resize(img, (400, height * ratio))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return hog.detectMultiScale(img, winStride=(2, 2), padding=(10, 10), scale=1.02)
+
+
+def remove_with_humans_cv2(directory, confidence=0.9):
+    print('\n\n')
+    print(f"Removing images with humans from {directory}...")
+    for img_path in os.listdir(directory):
+        print('\n\n')
+        print(f'Checking {img_path}...')
+        img_path = f'{directory}{img_path}'
+        img = cv2.imread(img_path)
+        (positions, weights) = detect_humans(img)
+        for weight in weights:
+            if weight >= confidence:
+                os.remove(img_path)
+                print(f"Removed {img_path}.")
+                break
+
+
 def remove_solid_bg(directory):
     for file in os.listdir(directory):
         print(f'Removing white background images from: {directory}/{file}')
@@ -76,20 +103,15 @@ if __name__ == "__main__":
                         adult_filter_off=True, force_replace=False, timeout=1)
 
     # delete images that are not .jpg or .png
-    print("\n\n")
-    print("Removing images that are not .jpg or .png format...")
     remove_invalid_format(f'{directory}/{name}/')
 
-    # detect and delete images that contain humans
-    print("\n\n")
-    print("Removing images that contain people...")
-    # remove_with_people(f'{directory}/{name}/')
-
+    # delete images with solid color backgrounds
     remove_solid_bg(f'{directory}/{name}/')
 
+    # detect and delete images that contain humans
+    remove_with_people(f'{directory}/{name}/')
+
     # rename remaining images
-    print("\n\n")
-    print("Renaming images...")
     num = 0
     for image in os.listdir(f'{directory}/{name}/'):
         image = f'{directory}/{name}/{image}'
