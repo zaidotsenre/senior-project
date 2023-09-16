@@ -17,6 +17,8 @@
 from bing_image_downloader import downloader
 import os
 import boto3
+import cv2
+import numpy as np
 
 
 def get_image_from_file(filename):
@@ -50,45 +52,47 @@ def remove_with_people(directory, min_confidence=50):
                 print(f"Removed {image}.")
 
 
+def remove_solid_bg(directory):
+    for file in os.listdir(directory):
+        print(f'Removing white background images from: {directory}/{file}')
+        img = cv2.imread(f'{directory}/{file}')
+        sections = [img[:, 0], img[:, -1], img[0, :], img[-1, :]]
+        for section in sections:
+            if (np.isclose(section, section[0, 0], rtol=0, atol=5).sum() / section.size) > 0.3:
+                os.remove(f'{directory}/{file}')
+                break
+
+
 if __name__ == "__main__":
 
     directory = "dataset"
 
     # get user input
-    equipment_names_path = input("Enter path to equipment list:")
+    name = input("Enter name of equipment:")
     num_images = int(input("Number of images to download (per equipment):"))
 
-    equipment_names = {}
-    with open(equipment_names_path, "r") as file:
-        equipment_names = file.readlines()
-
     # download images
-    for name in equipment_names:
-        try:
-            downloader.download(name, limit=num_images, output_dir=directory,
-                                adult_filter_off=True, force_replace=False, timeout=1)
-        except:
-            continue
+    downloader.download(name, limit=num_images, output_dir=directory,
+                        adult_filter_off=True, force_replace=False, timeout=1)
 
     # delete images that are not .jpg or .png
     print("\n\n")
     print("Removing images that are not .jpg or .png format...")
-    for name in equipment_names:
-        remove_invalid_format(f'{directory}/{name}/')
+    remove_invalid_format(f'{directory}/{name}/')
 
     # detect and delete images that contain humans
     print("\n\n")
     print("Removing images that contain people...")
-    for name in equipment_names:
-        remove_with_people(f'{directory}/{name}/')
+    # remove_with_people(f'{directory}/{name}/')
+
+    remove_solid_bg(f'{directory}/{name}/')
 
     # rename remaining images
     print("\n\n")
     print("Renaming images...")
-    for name in equipment_names:
-        num = 0
-        for image in os.listdir(f'{directory}/{name}/'):
-            image = f'{directory}/{name}/{image}'
-            ext = image[image.find('.'):]
-            os.rename(image, f'{directory}/{name}/{name.replace(" ", "_")}_{num}{ext}')
-            num += 1
+    num = 0
+    for image in os.listdir(f'{directory}/{name}/'):
+        image = f'{directory}/{name}/{image}'
+        ext = image[image.find('.'):]
+        os.rename(image, f'{directory}/{name}/{name.replace(" ", "_")}_{num}{ext}')
+        num += 1
