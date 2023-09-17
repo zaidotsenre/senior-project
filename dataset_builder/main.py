@@ -34,22 +34,19 @@ def remove_invalid_format(directory):
             os.remove(directory + "/" + file)
 
 
-def remove_with_people(directory, min_confidence=50):
-    rekognition = boto3.client("rekognition")
-
-    print('\n\n')
-    print(f"Removing images with humans from {directory}...")
-    for image in os.listdir(directory):
-        print('\n\n')
-        print(f'Checking {image}...')
-        image = f'{directory}{image}'
-        bytes = get_image_from_file(image)
-        response = rekognition.detect_labels(Image={'Bytes': bytes}, MinConfidence=min_confidence,
+def remove_with_people(img_path, min_confidence=50):
+    if os.path.exists(img_path):
+        print(f'Looking for people in: {img_path}')
+        rekognition = boto3.client("rekognition")
+        img_bytes = get_image_from_file(img_path)
+        response = rekognition.detect_labels(Image={'Bytes': img_bytes}, MinConfidence=min_confidence,
                                              Settings={"GeneralLabels": {"LabelInclusionFilters": ["Person"]}})
         for label in response["Labels"]:
             if label["Name"] == "Person":
-                os.remove(image)
-                print(f"Removed {image}.")
+                os.remove(img_path)
+                return True
+
+    return False
 
 
 def detect_humans(img):
@@ -79,47 +76,49 @@ def remove_with_humans_cv2(directory, confidence=0.9):
                 break
 
 
-def remove_solid_bg(directory):
-    for file in os.listdir(directory):
-        print(f'Removing white background images from: {directory}/{file}')
-        img = cv2.imread(f'{directory}/{file}')
+def remove_solid_bg(img_path):
+    if os.path.exists(img_path):
+        print(f'Looking for solid background in: {img_path}')
+        img = cv2.imread(img_path)
         sections = [img[:, 0], img[:, -1], img[0, :], img[-1, :]]
         for section in sections:
             if (np.isclose(section, section[0, 0], rtol=0, atol=5).sum() / section.size) > 0.3:
-                os.remove(f'{directory}/{file}')
-                break
+                os.remove(img_path)
+                return True
+    return False
 
 
 if __name__ == "__main__":
-
-    out_dir = "dataset"
 
     # get user input
     name = input("Enter name of equipment:")
     num_images = int(input("Number of images to download (per equipment):"))
 
-    downloader = bing_downloader.BingDownloader(name, f'{out_dir}/{name}')
+    out_dir = f'dataset/{name}'
 
-    while len(os.listdir(f'{out_dir}/{name}')) < num_images:
+    os.mkdir(out_dir)
+    downloader = bing_downloader.BingDownloader(name, out_dir)
+    checked_images = set()
+
+    while len(os.listdir(out_dir)) < num_images:
         try:
             downloader.download_next_page()
 
             # delete images that are not .jpg or .png
-            remove_invalid_format(f'{out_dir}/{name}/')
+            remove_invalid_format(out_dir)
 
-            # delete images with solid color backgrounds
-            remove_solid_bg(f'{out_dir}/{name}/')  # do not redo for images that have already been checked
-
-            # detect and delete images that contain humans
-            remove_with_people(f'{out_dir}/{name}/') # do not redo for images that have already been checked
+            for img in os.listdir(out_dir):
+                img_path = f'{out_dir}/{img}'
+                if img not in checked_images:
+                    if not remove_solid_bg(img_path) and not remove_with_people(img_path):
+                        checked_images.add(img)
         except Exception as e:
             print(f'Error: {e} | Moving on...')
             continue
 
     # rename remaining images
     num = 0
-    for image in os.listdir(f'{out_dir}/{name}/'):
-        image = f'{out_dir}/{name}/{image}'
-        ext = image[image.find('.'):]
-        os.rename(image, f'{out_dir}/{name}/{name.replace(" ", "_")}_{num}{ext}')
+    for img in os.listdir(out_dir):
+        ext = img[img.find('.'):]
+        os.rename(f'{out_dir}/{img}', f'{out_dir}/{name.replace(" ", "_")}_{num}{ext}')
         num += 1
