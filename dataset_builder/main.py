@@ -120,5 +120,5 @@ if __name__ == "__main__":
     num = 0
     for img in os.listdir(out_dir):
         ext = img[img.find('.'):]
-        os.rename(f'{out_dir}/{img}', f'{out_dir}/{name.replace(" ", "_")}_{num}{ext}')
+        os.rename(f'{out_dir}/{img}', f'{out_dir.replace(" ", "_")}/{name.replace(" ", "_")}_{num}{ext}')
         num += 1
