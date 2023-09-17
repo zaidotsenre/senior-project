@@ -14,11 +14,11 @@
 # output:
 #   an organized collection of images (no persons))
 
-from bing_image_downloader import downloader
 import os
 import boto3
 import cv2
 import numpy as np
+import bing_downloader
 
 
 def get_image_from_file(filename):
@@ -92,29 +92,34 @@ def remove_solid_bg(directory):
 
 if __name__ == "__main__":
 
-    directory = "dataset"
+    out_dir = "dataset"
 
     # get user input
     name = input("Enter name of equipment:")
     num_images = int(input("Number of images to download (per equipment):"))
 
-    # download images
-    downloader.download(name, limit=num_images, output_dir=directory,
-                        adult_filter_off=True, force_replace=False, timeout=1)
+    downloader = bing_downloader.BingDownloader(name, f'{out_dir}/{name}')
 
-    # delete images that are not .jpg or .png
-    remove_invalid_format(f'{directory}/{name}/')
+    while len(os.listdir(f'{out_dir}/{name}')) < num_images:
+        try:
+            downloader.download_next_page()
 
-    # delete images with solid color backgrounds
-    remove_solid_bg(f'{directory}/{name}/')
+            # delete images that are not .jpg or .png
+            remove_invalid_format(f'{out_dir}/{name}/')
 
-    # detect and delete images that contain humans
-    remove_with_people(f'{directory}/{name}/')
+            # delete images with solid color backgrounds
+            remove_solid_bg(f'{out_dir}/{name}/')  # do not redo for images that have already been checked
+
+            # detect and delete images that contain humans
+            remove_with_people(f'{out_dir}/{name}/') # do not redo for images that have already been checked
+        except Exception as e:
+            print(f'Error: {e} | Moving on...')
+            continue
 
     # rename remaining images
     num = 0
-    for image in os.listdir(f'{directory}/{name}/'):
-        image = f'{directory}/{name}/{image}'
+    for image in os.listdir(f'{out_dir}/{name}/'):
+        image = f'{out_dir}/{name}/{image}'
         ext = image[image.find('.'):]
-        os.rename(image, f'{directory}/{name}/{name.replace(" ", "_")}_{num}{ext}')
+        os.rename(image, f'{out_dir}/{name}/{name.replace(" ", "_")}_{num}{ext}')
         num += 1
