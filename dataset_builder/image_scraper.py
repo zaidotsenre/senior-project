@@ -1,7 +1,7 @@
 # A simple script intended to scrape images off Google image search results
 # Input: a url
 # Output: Image files in current directory
-
+import os.path
 import re
 import sys
 import requests
@@ -33,6 +33,10 @@ def download(url):
             img = response.content
             img_ext = link.rsplit('.', 1)[-1]
             img_name = f'Image_{i}.{img_ext}'
+            num = 2
+            while os.path.exists(img_name):
+                img_name = f'Image_{i}({num}).{img_ext}'
+                num += 1
             with open(img_name, 'wb') as f:
                 f.write(img)
     else:
