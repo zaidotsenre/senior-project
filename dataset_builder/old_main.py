@@ -94,30 +94,4 @@ def remove_solid_bg(img_path):
     return False
 
 
-if __name__ == "__main__":
 
-    # get user input
-    name = input("Enter name of equipment:")
-    num_images = int(input("Number of images to download (per equipment):"))
-
-    out_dir = f'dataset/{name}'
-
-    os.mkdir(out_dir)
-    downloader = bing_downloader.BingDownloader(name, out_dir)
-    checked_images = set()
-
-    while len(os.listdir(out_dir)) < num_images:
-        try:
-            downloader.download_next_page()
-
-            # delete images that are not .jpg or .png
-            remove_invalid_format(out_dir)
-
-            for img in os.listdir(out_dir):
-                img_path = f'{out_dir}/{img}'
-                if img not in checked_images:
-                    if not remove_solid_bg(img_path) and not remove_with_people(img_path):
-                        checked_images.add(img)
-        except Exception as e:
-            print(f'Error: {e} | Moving on...')
-            continue
