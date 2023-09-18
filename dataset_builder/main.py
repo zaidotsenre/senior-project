@@ -39,8 +39,11 @@ def remove_with_people(img_path, min_confidence=50):
         print(f'Looking for people in: {img_path}')
         rekognition = boto3.client("rekognition")
         img_bytes = get_image_from_file(img_path)
-        response = rekognition.detect_labels(Image={'Bytes': img_bytes}, MinConfidence=min_confidence,
+        try:
+            response = rekognition.detect_labels(Image={'Bytes': img_bytes}, MinConfidence=min_confidence,
                                              Settings={"GeneralLabels": {"LabelInclusionFilters": ["Person"]}})
+        except Exception as e:
+            return False
         for label in response["Labels"]:
             if label["Name"] == "Person":
                 os.remove(img_path)
@@ -79,12 +82,15 @@ def remove_with_humans_cv2(directory, confidence=0.9):
 def remove_solid_bg(img_path):
     if os.path.exists(img_path):
         print(f'Looking for solid background in: {img_path}')
-        img = cv2.imread(img_path)
-        sections = [img[:, 0], img[:, -1], img[0, :], img[-1, :]]
-        for section in sections:
-            if (np.isclose(section, section[0, 0], rtol=0, atol=5).sum() / section.size) > 0.3:
-                os.remove(img_path)
-                return True
+        try:
+            img = cv2.imread(img_path)
+            sections = [img[:, 0], img[:, -1], img[0, :], img[-1, :]]
+            for section in sections:
+                if (np.isclose(section, section[0, 0], rtol=0, atol=5).sum() / section.size) > 0.3:
+                    os.remove(img_path)
+                    return True
+        except Exception as e:
+            return False
     return False
 
 
@@ -115,10 +121,3 @@ if __name__ == "__main__":
         except Exception as e:
             print(f'Error: {e} | Moving on...')
             continue
-
-    # rename remaining images
-    num = 0
-    for img in os.listdir(out_dir):
-        ext = img[img.find('.'):]
-        os.rename(f'{out_dir}/{img}', f'{out_dir.replace(" ", "_")}/{name.replace(" ", "_")}_{num}{ext}')
-        num += 1

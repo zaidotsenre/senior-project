@@ -31,7 +31,7 @@ class BingDownloader:
         path = urllib.parse.urlsplit(url).path
         filename = posixpath.basename(path).split('?')[0]
         file_type = filename.split(".")[-1]
-        if file_type.lower() not in ["png", "jpg"]:
+        if file_type.lower() not in ["jpe", "jpeg", "jfif", "exif", "tiff", "gif", "bmp", "png", "jpg"]:
             file_type = "jpg"
         return self.out_dir.joinpath("Image_{}.{}".format(str(self.down_count), file_type))
 
