@@ -1,10 +1,9 @@
 # A simple script intended to scrape images off Google image search results
 # Input: a url
-# Output: A folder containing the downloaded images.
+# Output: Image files in current directory
 
 import re
 import sys
-
 import requests
 
 
@@ -18,7 +17,7 @@ def download(url):
 
         print(f'Downloading images from {url}')
 
-        #look for links in the response
+        # look for links in the response
         pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
         links = re.findall(pattern, response.text)
 
