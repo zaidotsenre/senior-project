@@ -19,9 +19,12 @@ def has_solid_bg(img):
 def main():
     for path in os.listdir():
         if re.search('\.(jpg|png|jpeg)\Z', path) is not None:
-            img = cv2.imread(path)
-            if has_solid_bg(img):
-                os.remove(path)
+            try:
+                img = cv2.imread(path)
+                if has_solid_bg(img):
+                    os.remove(path)
+            except Exception as e:
+                continue
 
 
 if __name__ == '__main__':
