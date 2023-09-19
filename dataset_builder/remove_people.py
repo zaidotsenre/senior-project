@@ -13,7 +13,7 @@ def main():
         if re.search('\.(jpg|png|jpeg)\Z', path) is not None:
             img_bytes = get_image_from_file(path)
             rekognition = boto3.client("rekognition")
-            response = rekognition.detect_labels(Image={'Bytes': img_bytes}, MinConfidence=90,
+            response = rekognition.detect_labels(Image={'Bytes': img_bytes}, MinConfidence=70,
                                                  Settings={"GeneralLabels": {"LabelInclusionFilters": ["Person"]}})
             for label in response["Labels"]:
                 if label["Name"] == "Person":
