@@ -1,3 +1,6 @@
+# Provides an API for the front end to query Rekognition without storing its own credentials
+# Need to replace or wrap with a production ready server like waitress
+
 from flask import Flask, request
 import boto3
 
@@ -12,6 +15,7 @@ def get_label(img):
                                                 MinConfidence=50,
                                                 ProjectVersionArn=model)
     if len(response['CustomLabels']) > 0:
+        # need to modify this to return the full label response to the client
         return response['CustomLabels'][0]['Name']
     else:
         return 'No Match'
