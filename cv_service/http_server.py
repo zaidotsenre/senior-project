@@ -16,7 +16,7 @@ def get_label(img):
                                                 ProjectVersionArn=model)
     if len(response['CustomLabels']) > 0:
         # need to modify this to return the full label response to the client
-        return response['CustomLabels'][0]['Name']
+        return response['CustomLabels'][0]
     else:
         return 'No Match'
 
