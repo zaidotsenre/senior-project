@@ -15,8 +15,8 @@ def positive_test(path_images):
     failed_tests = []
 
     for path in os.listdir(path_images):
-        with open(f'{path_images}/{path}', 'r') as img:
-            response = rekognition.detect_custom_labels(Image={'Bytes': img},
+        with open(f'{path_images}\\{path}', 'rb') as img:
+            response = rekognition.detect_custom_labels(Image={'Bytes': img.read()},
                                                         MinConfidence=50,
                                                         ProjectVersionArn=model)
             total += 1
@@ -44,8 +44,8 @@ def negative_test(path_images):
     failed_tests = []
 
     for path in os.listdir(path_images):
-        with open(f'{path_images}/{path}', 'r') as img:
-            response = rekognition.detect_custom_labels(Image={'Bytes': img},
+        with open(f'{path_images}\\{path}', 'rb') as img:
+            response = rekognition.detect_custom_labels(Image={'Bytes': img.read()},
                                                         MinConfidence=50,
                                                         ProjectVersionArn=model)
             total += 1
@@ -59,8 +59,8 @@ def negative_test(path_images):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    negative_test_dataset = ''
-    positive_test_dataset = ''
+    negative_test_dataset = 'C:\\Users\\Ernesto\\Desktop\\negative_tests'
+    positive_test_dataset = 'C:\\Users\\Ernesto\\Desktop\\positive_tests'
 
     # run tests
     positive_test_results = positive_test(positive_test_dataset)
@@ -74,6 +74,8 @@ if __name__ == '__main__':
     print(f'   Failed tests:')
     for failed_test in positive_test_results[2]:
         print(f'      {failed_test}')
+
+    print('\n\n')
 
     print(f'Negative testing results:')
     print(f'--------------------------')
