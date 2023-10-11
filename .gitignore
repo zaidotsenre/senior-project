@@ -1,7 +1,7 @@
 dataset_builder/dataset/
 venv/
 .idea/
-*.jpg
-*.jpeg
-*.jpeg
-*.png
+dataset_builder/*.jpg
+dataset_builder/*.jpeg
+dataset_builder/*.jpeg
+dataset_builder/*.png
