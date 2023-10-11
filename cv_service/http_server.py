@@ -8,8 +8,8 @@ app = Flask(__name__)
 
 
 def get_label(img):
-    model = ('arn:aws:rekognition:us-east-1:422292458603:project/gym_equipment/version/gym_equipment.2023-09-19T00.49'
-             '.22/1695098962266')
+    model = ('arn:aws:rekognition:us-east-1:422292458603:project/gym_equipment/version/gym_equipment.2023-10-10T23.59'
+             '.56/1696996796878')
     rekognition = boto3.client("rekognition", region_name='us-east-1')
     response = rekognition.detect_custom_labels(Image={'Bytes': img},
                                                 MinConfidence=50,
