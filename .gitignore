@@ -1,5 +1,7 @@
 dataset_builder/dataset/
-dataset_builder/venv/
+venv/
+.idea/
 *.jpg
 *.jpeg
 *.jpeg
+*.png
