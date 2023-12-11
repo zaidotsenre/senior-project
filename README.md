@@ -21,3 +21,6 @@ Video capture of running application: https://www.youtube.com/shorts/HY3wPQTl8oE
 
 ### client
   - An Android client built with Flutter.
+
+### dataset
+  - The dataset used to train AWS Rekognition Custom Labels. Built from online images with the help of dataset_builder tools.
