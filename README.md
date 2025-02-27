@@ -7,7 +7,7 @@ The user is then presented with excercise choices for the muscle group they inte
 
 Video capture of running application: https://www.youtube.com/shorts/HY3wPQTl8oE?feature=share
 
-[![Watch the video](https://img.youtube.com/vi/HY3wPQTl8oE/maxresdefault.jpg)](https://www.youtube.com/shorts/HY3wPQTl8oE)
+[![Video demonstration of the application](https://img.youtube.com/vi/HY3wPQTl8oE/0.jpg)](https://www.youtube.com/watch?v=HY3wPQTl8oE)
 
 
 ## Repository contents:
