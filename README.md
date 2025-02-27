@@ -1,12 +1,13 @@
-# Senior Project
+# Senior Project in Information Technology
 
-The project consists of an application that allows users to scan gym equipment using their phone camera and get a video demonstration on how to use the machine.
+A mobile application that allows users to scan gym equipment using their phone camera and get a video demonstration on how to use the machine. Built with Flutter. 
 
 The application leverages AWS Rekognition's Custom Labels feature to identify gym equipment in user provided images. The returned labels are used to lookup excercises that can be performed using the identified machine in a SQLite database that is "shipped" with the app. 
 The user is then presented with excercise choices for the muscle group they intend to work.
 
 Video capture of running application: https://www.youtube.com/shorts/HY3wPQTl8oE?feature=share
 
+<iframe width="458" height="815" src="https://www.youtube.com/embed/HY3wPQTl8oE" title="Senior Project in Information Technology - Video Demonstration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Repository contents:
 
@@ -14,7 +15,7 @@ Video capture of running application: https://www.youtube.com/shorts/HY3wPQTl8oE
   -  A flask server that interfaces between clients and the AWS Rekognition API.
 
 ### dataset_builder
-  - Python scripts used to simplify the process of building datasets.
+  - Python scripts used to simplify the process of building datasets to train the AWS Rekognition model.
 
 ### tests
   - Testing script for AWS Rekognition model. 
